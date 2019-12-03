@@ -4,6 +4,7 @@ namespace LL00SingleLinkedList
 {
     class Program
     {
+        /*
         static public void WriteList(MyLinkedList<int> ll)
         {
             ListNode<int> current = ll.head;
@@ -13,6 +14,7 @@ namespace LL00SingleLinkedList
                 current = current.Next;
             }
         }
+        */
 
         static void Main(string[] args)
         {
@@ -21,11 +23,17 @@ namespace LL00SingleLinkedList
             ll.Add(2);
             ll.Add(3);
             ll.AddToStart(4);
-            WriteList(ll);
+            ll.Insert(2,2);
+            // WriteList(ll);
             Console.WriteLine("=" + ll.Count);
             Console.WriteLine(ll.Contains(3));
+            Console.WriteLine(ll.IndexOf(3));
             Console.WriteLine(ll.Contains(99));
-            Console.ReadKey();
+            Console.WriteLine("-- List --");
+            foreach (var l in ll)
+            {
+                Console.WriteLine(l);
+            }
         }
     }
 }
