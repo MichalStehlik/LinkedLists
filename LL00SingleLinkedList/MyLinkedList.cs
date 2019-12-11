@@ -5,30 +5,13 @@ using System.Text;
 
 namespace LL00SingleLinkedList
 {
-    class MyLinkedList<T> : IList<T>
+class MyLinkedList<T> : IList<T>
     {
+        public T this[int index] { get => GetValue(index); set => SetValue(index, value); }
+
         public ListNode<T> head;
 
-        public void Add(T item)
-        {
-            ListNode<T> node = new ListNode<T>(item);
-            if (head == null)
-            {
-                head = node;
-            }
-            else
-            {
-                ListNode<T> current = head;
-                while (current.Next != null)
-                {
-                    current = current.Next;
-                }
-                current.Next = node;
-            }
-        }
-
-        public int Count
-        {
+        public int Count {
             get
             {
                 int counter = 0;
@@ -42,13 +25,22 @@ namespace LL00SingleLinkedList
             }
         }
 
-        public bool IsFixedSize => throw new NotImplementedException();
+        public bool IsReadOnly { get { return false; } }
 
-        public bool IsReadOnly => throw new NotImplementedException();
-
-        public bool IsSynchronized => throw new NotImplementedException();
-
-        public object SyncRoot => throw new NotImplementedException();
+        public void Add(T item)
+        {
+            ListNode<T> node = new ListNode<T>(item);
+            if (head == null)
+            {
+                head = node;
+            }
+            else
+            {
+                var current = head;
+                while (current.Next != null) current = current.Next;
+                current.Next = node;
+            }          
+        }
 
         public void Clear()
         {
@@ -70,54 +62,60 @@ namespace LL00SingleLinkedList
                 if (current.value.Equals(item))
                 {
                     return true;
-                }   
+                }
                 current = current.Next;
             }
             return false;
         }
 
-        public int IndexOf(T item)
+        public void CopyTo(T[] array, int arrayIndex)
         {
-            ListNode<T> current = head;
-            int count = 0;
+            var current = head;
             while (current != null)
             {
-                if (current.value.Equals(item))
-                {
-                    return count;
-                }
-                current = current.Next;
-                count++;
+                array.SetValue(current.value, arrayIndex++);
             }
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return new MyLinkedListEnumerator<T>(this);
+        }
+
+        public int IndexOf(T item)
+        {
+            var current = head;
+            int pos = 0;
+            while (current != null && !current.value.Equals(item))
+            {
+                current = current.Next;
+                pos++;
+            }
+            if (current.value.Equals(item))
+                return pos;
             return -1;
         }
 
-        public T GetItem(int index)
-        {
-            return GetNode(index).value;
-        }
-
-        public void SetItem(int index, T value)
-        {
-            GetNode(index).value = value;
-        }
-
-        public T this[int index]
-        {
-            get { return GetItem(index); }
-            set { SetItem(index, value); }
-        }
-
         public void Insert(int index, T item)
-        // DU
         {
-
+            if (index == 0)
+            {
+                AddToStart(item);
+            }
+            else
+            {
+                ListNode<T> newNode = new ListNode<T>(item);
+                ListNode<T> node = GetNode(index);
+                newNode.Next = node.Next;
+                node.Next = newNode;
+            }
         }
 
         public bool Remove(T item)
         {
             ListNode<T> current = head;
-            ListNode<T> previous = head;
+            ListNode<T> previous = null;
+
             while (current != null)
             {
                 if (current.value.Equals(item))
@@ -140,23 +138,31 @@ namespace LL00SingleLinkedList
 
         public void RemoveAt(int index)
         {
+            var removed = GetNode(index);
             if (index == 0)
             {
-                head = head.Next;
+                head = removed.Next;
             }
             else
             {
                 var previous = GetNode(index - 1);
-                previous.Next = previous.Next.Next;
+                previous.Next = removed.Next;
             }
+        }
+
+        public T GetValue(int index)
+        {
+            return GetNode(index).value;
+        }
+
+        public T SetValue(int index, T newValue)
+        {
+            GetNode(index).value = newValue;
+            return newValue;
         }
 
         protected ListNode<T> GetNode(int index)
         {
-            if (index < 0)
-            {
-                throw new IndexOutOfRangeException(index.ToString());
-            }
             ListNode<T> current = head;
             for (int i = 0; i < index; i++)
             {
@@ -176,19 +182,56 @@ namespace LL00SingleLinkedList
             return current;
         }
 
-        public void CopyTo(T[] array, int arrayIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            return new MyLinkedListEnumerator<T>(this);
-        }
-
         IEnumerator IEnumerable.GetEnumerator()
         {
             return new MyLinkedListEnumerator<T>(this);
+        }
+    }
+
+    class MyLinkedListEnumerator<T> : IEnumerator<T>
+    {
+        protected ListNode<T> _current;
+        protected MyLinkedList<T> _list;
+
+        public MyLinkedListEnumerator(MyLinkedList<T> list)
+        {
+            _list = list;
+            Reset();
+        }
+
+        public object Current 
+        {
+            get 
+            {
+                return _current.value; 
+            } 
+        }
+
+        T IEnumerator<T>.Current { get { return _current.value; } }
+
+        public void Dispose() {}
+
+        public bool MoveNext()
+        {
+            if (_current == null && _list.head != null) 
+            {
+                _current = _list.head;
+            }               
+            else if (_current == null)
+            {
+                return false;
+            }
+            else
+            {
+                _current = _current.Next;
+            }               
+            if (_current == null) return false;
+            return true;
+        }
+
+        public void Reset()
+        {
+            _current = null;
         }
     }
 }
